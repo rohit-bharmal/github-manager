@@ -11,42 +11,90 @@ const github = axios.create({
   },
 });
 
+// Helper function to fetch all pages of results
+async function fetchAllPages(url: string, params: any = {}) {
+  const allResults: any[] = [];
+  let page = 1;
+  let hasNextPage = true;
+
+  while (hasNextPage) {
+    const response = await github.get(url, {
+      params: { ...params, per_page: 100, page },
+    });
+
+    allResults.push(...response.data);
+
+    // Check if there are more pages
+    hasNextPage = response.data.length === 100;
+    page++;
+
+    // Safety limit to prevent infinite loops
+    if (page > 50) break;
+  }
+
+  return allResults;
+}
+
+// Helper function for search endpoints (has different response structure)
+async function fetchAllSearchResults(url: string, params: any = {}) {
+  const allResults: any[] = [];
+  let page = 1;
+  let hasNextPage = true;
+
+  while (hasNextPage) {
+    const response = await github.get(url, {
+      params: { ...params, per_page: 100, page },
+    });
+
+    allResults.push(...response.data.items);
+
+    // Check if there are more pages (search API returns total_count)
+    hasNextPage =
+      response.data.items.length === 100 &&
+      allResults.length < response.data.total_count;
+    page++;
+
+    // GitHub search API has a limit of 1000 results, safety limit
+    if (page > 10 || allResults.length >= 1000) break;
+  }
+
+  return allResults;
+}
+
 export async function fetchRepos(username: string) {
-  const response = await github.get(`/users/${username}/repos`);
-  return response.data;
+  // Fetch all repositories (no limit)
+  return await fetchAllPages(`/users/${username}/repos`, { sort: "updated" });
 }
 
 export async function fetchIssues(username: string, repo: string) {
-  const res = await github.get(`/repos/${username}/${repo}/issues`, {
-    params: { state: "all", per_page: 10 },
+  // Fetch all issues (no 10 item limit)
+  const allIssues = await fetchAllPages(`/repos/${username}/${repo}/issues`, {
+    state: "all",
   });
-  return res.data.filter((issue: any) => !issue.pull_request);
+  return allIssues.filter((issue: any) => !issue.pull_request);
 }
 
 export async function fetchPRs(username: string, repo: string) {
-  const res = await github.get(`/repos/${username}/${repo}/pulls`, {
-    params: { state: "all", per_page: 10 },
+  // Fetch all PRs (no 10 item limit)
+  return await fetchAllPages(`/repos/${username}/${repo}/pulls`, {
+    state: "all",
   });
-  return res.data;
 }
 
 // Fetch all PRs authored by the user across all repositories
 export async function fetchUserAuthoredPRs(username: string) {
-  const res = await github.get(`/search/issues`, {
-    params: {
-      q: `type:pr author:${username}`,
-      sort: "updated",
-      order: "desc",
-      per_page: 20,
-    },
+  // Fetch all user PRs (no 20 item limit)
+  return await fetchAllSearchResults(`/search/issues`, {
+    q: `type:pr author:${username}`,
+    sort: "updated",
+    order: "desc",
   });
-  return res.data.items;
 }
 
 // Fetch PRs for a specific repository that includes both repo PRs and user-authored PRs from upstream
 export async function fetchAllPRsForRepo(username: string, repo: string) {
   try {
-    // Get PRs from the user's repository
+    // Get all PRs from the user's repository (no limits)
     const repoPRs = await fetchPRs(username, repo);
 
     // Check if this is a fork and get the upstream repo info
@@ -55,19 +103,15 @@ export async function fetchAllPRsForRepo(username: string, repo: string) {
 
     let upstreamPRs = [];
     if (isForked && repoInfo.data.parent) {
-      // Get PRs authored by the user in the upstream repository
+      // Get all PRs authored by the user in the upstream repository (no 10 item limit)
       const upstreamOwner = repoInfo.data.parent.owner.login;
       const upstreamRepoName = repoInfo.data.parent.name;
 
-      const searchRes = await github.get(`/search/issues`, {
-        params: {
-          q: `type:pr author:${username} repo:${upstreamOwner}/${upstreamRepoName}`,
-          sort: "updated",
-          order: "desc",
-          per_page: 10,
-        },
+      upstreamPRs = await fetchAllSearchResults(`/search/issues`, {
+        q: `type:pr author:${username} repo:${upstreamOwner}/${upstreamRepoName}`,
+        sort: "updated",
+        order: "desc",
       });
-      upstreamPRs = searchRes.data.items;
     }
 
     // Combine and deduplicate PRs

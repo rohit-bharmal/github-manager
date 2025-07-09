@@ -134,12 +134,23 @@
 
       <div class="card-content">
         <!-- Filter PRs -->
-        <div class="state-filter">
-          <select v-model="userPRState" class="filter-select">
-            <option value="all">All States</option>
-            <option value="open">Open</option>
-            <option value="closed">Closed</option>
-          </select>
+        <div class="pr-filters">
+          <div class="pr-search-filter">
+            <input 
+              v-model="prSearchQuery" 
+              type="text" 
+              placeholder="Search PRs by repository, title, or number..." 
+              class="filter-input pr-search-input"
+            />
+            <span class="search-icon">🔍</span>
+          </div>
+          <div class="state-filter">
+            <select v-model="userPRState" class="filter-select">
+              <option value="all">All States</option>
+              <option value="open">Open</option>
+              <option value="closed">Closed</option>
+            </select>
+          </div>
         </div>
 
         <!-- Loading State -->
@@ -350,11 +361,21 @@
         <p>Enter a GitHub username above to explore their repositories, issues, and pull requests.</p>
       </div>
     </div>
+
+    <!-- Back to Top Button -->
+    <button 
+      v-if="showBackToTop" 
+      @click="scrollToTop" 
+      class="back-to-top-btn"
+      aria-label="Back to top"
+    >
+      <span class="back-to-top-icon">↑</span>
+    </button>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { fetchRepos, fetchIssues, fetchAllPRsForRepo, fetchUserAuthoredPRs } from '../api/github'
 
 // Reactive state
@@ -365,12 +386,14 @@ const loading = ref(false)
 const detailsLoading = ref(false)
 const error = ref<string | null>(null)
 const userPRsLoading = ref(false)
+const showBackToTop = ref(false)
 
 const issues = ref<any[]>([])
 const prs = ref<any[]>([])
 const userAuthoredPRs = ref<any[]>([])
 
 const searchQuery = ref('')
+const prSearchQuery = ref('')
 const sortBy = ref('updated_at')
 const sortOrder = ref('desc')
 
@@ -421,9 +444,32 @@ const filteredPRs = computed(() =>
 
 const userPRState = ref<'all' | 'open' | 'closed'>('all')
 
-const filteredUserPRs = computed(() =>
-  userPRState.value === 'all' ? userAuthoredPRs.value : userAuthoredPRs.value.filter(pr => pr.state === userPRState.value)
-)
+const filteredUserPRs = computed(() => {
+  let filtered = userAuthoredPRs.value
+
+  // Filter by state
+  if (userPRState.value !== 'all') {
+    filtered = filtered.filter(pr => pr.state === userPRState.value)
+  }
+
+  // Filter by search query
+  if (prSearchQuery.value) {
+    const query = prSearchQuery.value.toLowerCase()
+    filtered = filtered.filter(pr => {
+      // Extract repository name from repository_url
+      const repoName = pr.repository_url.split('/').slice(-2).join('/').toLowerCase()
+      
+      // Search in repository name, PR title, and PR number
+      return (
+        repoName.includes(query) ||
+        pr.title.toLowerCase().includes(query) ||
+        pr.number.toString().includes(query)
+      )
+    })
+  }
+
+  return filtered
+})
 
 // Methods
 async function loadRepositories() {
@@ -432,6 +478,9 @@ async function loadRepositories() {
   loading.value = true
   error.value = null
   selectedRepo.value = null
+  // Clear search queries when loading new user
+  searchQuery.value = ''
+  prSearchQuery.value = ''
 
   try {
     const [reposData] = await Promise.all([
@@ -489,9 +538,26 @@ function formatDate(dateString: string) {
   return new Date(dateString).toLocaleDateString()
 }
 
-// Load initial data
+// Back to top functionality
+function scrollToTop() {
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth'
+  })
+}
+
+function handleScroll() {
+  showBackToTop.value = window.scrollY > 300
+}
+
+// Load initial data and setup scroll listener
 onMounted(() => {
   loadRepositories()
+  window.addEventListener('scroll', handleScroll)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll)
 })
 </script>
 
@@ -730,6 +796,59 @@ onMounted(() => {
 
 .state-filter {
   margin-bottom: 1rem;
+}
+
+/* PR Filters */
+.pr-filters {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.pr-search-filter {
+  position: relative;
+  flex: 1;
+  min-width: 250px;
+}
+
+.pr-search-input {
+  width: 100%;
+  padding-right: 2.5rem;
+  padding-left: 1rem;
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+  background: white;
+}
+
+.pr-search-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.pr-search-input::placeholder {
+  color: #9ca3af;
+}
+
+.search-icon {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+  font-size: 1rem;
+  pointer-events: none;
+}
+
+.pr-filters .state-filter {
+  margin-bottom: 0;
+  min-width: 150px;
 }
 
 /* Repository Grid */
@@ -1211,6 +1330,81 @@ onMounted(() => {
 
   .toggle-btn {
     justify-content: center;
+  }
+
+  .pr-filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .pr-search-filter {
+    min-width: unset;
+  }
+
+  .pr-filters .state-filter {
+    min-width: unset;
+  }
+}
+
+/* Back to Top Button */
+.back-to-top-btn {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  width: 3.5rem;
+  height: 3.5rem;
+  background: var(--gradient-primary);
+  border: none;
+  border-radius: 50%;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  transition: all 0.3s ease;
+  z-index: 1000;
+  animation: fadeInUp 0.3s ease;
+}
+
+.back-to-top-btn:hover {
+  background: var(--gradient-secondary);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+}
+
+.back-to-top-btn:active {
+  transform: translateY(0);
+}
+
+.back-to-top-icon {
+  font-size: 1.5rem;
+  font-weight: bold;
+  line-height: 1;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Mobile responsiveness for back to top button */
+@media (max-width: 768px) {
+  .back-to-top-btn {
+    bottom: 1.5rem;
+    right: 1.5rem;
+    width: 3rem;
+    height: 3rem;
+  }
+
+  .back-to-top-icon {
+    font-size: 1.25rem;
   }
 }
 
