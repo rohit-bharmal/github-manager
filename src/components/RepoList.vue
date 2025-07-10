@@ -136,12 +136,8 @@
         <!-- Filter PRs -->
         <div class="pr-filters">
           <div class="pr-search-filter">
-            <input 
-              v-model="prSearchQuery" 
-              type="text" 
-              placeholder="Search PRs by repository, title, or number..." 
-              class="filter-input pr-search-input"
-            />
+            <input v-model="prSearchQuery" type="text" placeholder="Search PRs by repository, title, or number..."
+              class="filter-input pr-search-input" />
             <span class="search-icon">🔍</span>
           </div>
           <div class="state-filter">
@@ -363,12 +359,7 @@
     </div>
 
     <!-- Back to Top Button -->
-    <button 
-      v-if="showBackToTop" 
-      @click="scrollToTop" 
-      class="back-to-top-btn"
-      aria-label="Back to top"
-    >
+    <button v-if="showBackToTop" @click="scrollToTop" class="back-to-top-btn" aria-label="Back to top">
       <span class="back-to-top-icon">↑</span>
     </button>
   </div>
@@ -458,7 +449,7 @@ const filteredUserPRs = computed(() => {
     filtered = filtered.filter(pr => {
       // Extract repository name from repository_url
       const repoName = pr.repository_url.split('/').slice(-2).join('/').toLowerCase()
-      
+
       // Search in repository name, PR title, and PR number
       return (
         repoName.includes(query) ||
@@ -581,25 +572,13 @@ onUnmounted(() => {
 }
 
 .card-header {
-  background: var(--gradient-primary);
-  color: white;
+  background: var(--surface);
+  color: var(--text-color);
   padding: 1.5rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  position: relative;
-  overflow: hidden;
-}
-
-.card-header::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(45deg, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
-  pointer-events: none;
+  border-bottom: 1px solid var(--border);
 }
 
 .card-title {
@@ -612,29 +591,33 @@ onUnmounted(() => {
 }
 
 .repo-count {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--surface-hover);
+  border: 1px solid var(--border);
   padding: 0.25rem 0.75rem;
-  border-radius: 20px;
+  border-radius: 12px;
   font-size: 0.875rem;
   margin-left: 1rem;
+  color: var(--text-secondary);
 }
 
 .close-btn {
-  background: rgba(255, 255, 255, 0.2);
-  border: none;
-  color: white;
+  background: var(--surface-hover);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
   width: 32px;
   height: 32px;
-  border-radius: 50%;
+  border-radius: 6px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background-color 0.2s;
+  transition: all 0.2s;
 }
 
 .close-btn:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: var(--surface-hover);
+  border-color: var(--border-muted);
+  color: var(--text-color);
 }
 
 .card-content {
@@ -644,6 +627,7 @@ onUnmounted(() => {
 /* Search Form */
 .search-form {
   max-width: 600px;
+  margin: 0 auto;
 }
 
 .input-group {
@@ -674,31 +658,26 @@ onUnmounted(() => {
 
 .search-btn {
   padding: 0.75rem 1.5rem;
-  background: var(--gradient-primary);
+  background: var(--primary-color);
   color: white;
   border: none;
-  border-radius: 8px;
-  font-weight: 600;
+  border-radius: 6px;
+  font-weight: 500;
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 0.5rem;
   transition: all 0.2s;
   white-space: nowrap;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
 .search-btn:hover:not(:disabled) {
-  background: var(--gradient-secondary);
-  transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+  background: var(--primary-hover);
 }
 
 .search-btn:disabled {
-  background: #9ca3af;
+  background: var(--text-muted);
   cursor: not-allowed;
-  box-shadow: none;
-  transform: none;
 }
 
 .spinner {
@@ -728,41 +707,44 @@ onUnmounted(() => {
 .toggle-btn {
   flex: 1;
   padding: 0.75rem 1rem;
-  background: #f8fafc;
-  border: 2px solid #e5e7eb;
-  border-radius: 8px;
-  font-weight: 600;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-weight: 500;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
   transition: all 0.2s;
-  color: #6b7280;
+  color: var(--text-secondary);
 }
 
 .toggle-btn:hover {
-  background: #f1f5f9;
-  border-color: #d1d5db;
+  background: var(--surface-hover);
+  border-color: var(--border-muted);
 }
 
 .toggle-btn.active {
-  background: #6366f1;
-  border-color: #6366f1;
+  background: var(--primary-color);
+  border-color: var(--primary-color);
   color: white;
 }
 
 .count-badge {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--surface-hover);
+  border: 1px solid var(--border);
   padding: 0.125rem 0.5rem;
   border-radius: 10px;
   font-size: 0.75rem;
   font-weight: 500;
+  color: var(--text-secondary);
 }
 
-.toggle-btn:not(.active) .count-badge {
-  background: #e5e7eb;
-  color: #6b7280;
+.toggle-btn.active .count-badge {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.9);
 }
 
 /* Filters */
@@ -782,16 +764,18 @@ onUnmounted(() => {
 .filter-input,
 .filter-select {
   padding: 0.5rem;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border);
   border-radius: 6px;
   font-size: 0.875rem;
+  background: var(--surface);
+  color: var(--text-color);
 }
 
 .filter-input:focus,
 .filter-select:focus {
   outline: none;
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.12);
 }
 
 .state-filter {
@@ -859,9 +843,9 @@ onUnmounted(() => {
 }
 
 .repo-card {
-  background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
   overflow: hidden;
   transition: all 0.2s;
   cursor: pointer;
@@ -871,26 +855,26 @@ onUnmounted(() => {
 }
 
 .repo-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-color: var(--border-muted);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .repo-card.selected {
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+  box-shadow: 0 0 0 2px rgba(9, 105, 218, 0.15);
 }
 
 .repo-header {
   padding: 1rem;
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-  border-bottom: 1px solid #e2e8f0;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
 }
 
 .repo-title {
   margin: 0;
   font-size: 1.125rem;
   font-weight: 600;
-  color: #1f2937;
+  color: var(--text-color);
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -910,20 +894,19 @@ onUnmounted(() => {
 
 .repo-description {
   margin: 0;
-  color: #6b7280;
+  color: var(--text-secondary);
   line-height: 1.5;
   min-height: 3rem;
 }
 
 .language-tag {
   display: inline-block;
-  background: var(--gradient-secondary);
+  background: var(--accent-color);
   color: white;
   padding: 0.25rem 0.75rem;
   border-radius: 12px;
   font-size: 0.75rem;
   font-weight: 500;
-  box-shadow: 0 2px 4px rgba(249, 115, 22, 0.3);
 }
 
 .repo-stats {
@@ -936,7 +919,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 0.25rem;
-  color: #6b7280;
+  color: var(--text-secondary);
   font-size: 0.875rem;
 }
 
@@ -963,33 +946,30 @@ onUnmounted(() => {
 }
 
 .btn-outline {
-  background: white;
-  color: #6b7280;
-  border: 1px solid #d1d5db;
+  background: var(--surface);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
 }
 
 .btn-outline:hover {
-  background: #f9fafb;
-  border-color: #9ca3af;
+  background: var(--surface-hover);
+  border-color: var(--border-muted);
 }
 
 .btn-primary {
-  background: var(--gradient-primary);
+  background: var(--primary-color);
   color: white;
   flex: 1;
-  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
 }
 
 .btn-primary:hover {
-  background: var(--gradient-secondary);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+  background: var(--primary-hover);
 }
 
 /* Tabs */
 .tabs {
   display: flex;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--border);
 }
 
 .tab-btn {
@@ -1001,32 +981,32 @@ onUnmounted(() => {
   align-items: center;
   gap: 0.5rem;
   font-weight: 500;
-  color: #6b7280;
+  color: var(--text-secondary);
   transition: all 0.2s;
   border-bottom: 2px solid transparent;
 }
 
 .tab-btn:hover {
-  color: #374151;
-  background: #f9fafb;
+  color: var(--text-color);
+  background: var(--surface-hover);
 }
 
 .tab-btn.active {
   color: var(--primary-color);
   border-bottom-color: var(--primary-color);
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(6, 182, 212, 0.1) 100%);
+  background: var(--surface);
 }
 
 .tab-count {
-  background: #e5e7eb;
-  color: #6b7280;
+  background: var(--surface-hover);
+  color: var(--text-secondary);
   padding: 0.125rem 0.5rem;
   border-radius: 10px;
   font-size: 0.75rem;
 }
 
 .tab-btn.active .tab-count {
-  background: var(--gradient-primary);
+  background: var(--primary-color);
   color: white;
 }
 
@@ -1044,14 +1024,14 @@ onUnmounted(() => {
   align-items: flex-start;
   gap: 1rem;
   padding: 1rem;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
   transition: background-color 0.2s;
 }
 
 .issue-item:hover,
 .pr-item:hover {
-  background: #f9fafb;
+  background: var(--surface-hover);
 }
 
 .issue-icon,
@@ -1077,7 +1057,7 @@ onUnmounted(() => {
 
 .issue-title a,
 .pr-title a {
-  color: #1f2937;
+  color: var(--text-color);
   text-decoration: none;
 }
 
@@ -1088,7 +1068,7 @@ onUnmounted(() => {
 
 .issue-meta,
 .pr-meta {
-  color: #6b7280;
+  color: var(--text-secondary);
   font-size: 0.875rem;
 }
 
@@ -1100,19 +1080,19 @@ onUnmounted(() => {
 }
 
 .status-badge.open {
-  background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+  background: #dcfce7;
   color: #166534;
   border: 1px solid #86efac;
 }
 
 .status-badge.closed {
-  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  background: #fee2e2;
   color: #991b1b;
   border: 1px solid #fca5a5;
 }
 
 .status-badge.merged {
-  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  background: #dbeafe;
   color: #1e40af;
   border: 1px solid #93c5fd;
 }
@@ -1125,9 +1105,9 @@ onUnmounted(() => {
 }
 
 .skeleton-card {
-  background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
   overflow: hidden;
 }
 
@@ -1180,7 +1160,7 @@ onUnmounted(() => {
 .empty-state {
   text-align: center;
   padding: 3rem 1rem;
-  color: #6b7280;
+  color: var(--text-secondary);
 }
 
 .empty-icon {
@@ -1191,7 +1171,7 @@ onUnmounted(() => {
 
 .empty-state h3 {
   margin: 0 0 0.5rem 0;
-  color: #374151;
+  color: var(--text-color);
 }
 
 .empty-state p {
@@ -1201,21 +1181,9 @@ onUnmounted(() => {
 
 /* Welcome State */
 .welcome-card {
-  background: var(--gradient-primary);
-  color: white;
-  position: relative;
-  overflow: hidden;
-}
-
-.welcome-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(45deg, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
-  pointer-events: none;
+  background: var(--surface);
+  color: var(--text-color);
+  border: 1px solid var(--border);
 }
 
 .welcome-content {
@@ -1353,7 +1321,7 @@ onUnmounted(() => {
   right: 2rem;
   width: 3.5rem;
   height: 3.5rem;
-  background: var(--gradient-primary);
+  background: var(--primary-color);
   border: none;
   border-radius: 50%;
   color: white;
@@ -1361,16 +1329,16 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   transition: all 0.3s ease;
-  z-index: 1000;
+  z-index: 999;
   animation: fadeInUp 0.3s ease;
 }
 
 .back-to-top-btn:hover {
-  background: var(--gradient-secondary);
+  background: var(--primary-hover);
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
 }
 
 .back-to-top-btn:active {
@@ -1388,6 +1356,7 @@ onUnmounted(() => {
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -1420,17 +1389,16 @@ onUnmounted(() => {
   align-items: flex-start;
   gap: 1rem;
   padding: 1.5rem;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
   transition: all 0.2s;
-  background: white;
+  background: var(--surface);
 }
 
 .user-pr-item:hover {
-  background: #f9fafb;
-  border-color: #d1d5db;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  background: var(--surface-hover);
+  border-color: var(--border-muted);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .user-pr-item .pr-content {
@@ -1444,7 +1412,7 @@ onUnmounted(() => {
 }
 
 .user-pr-item .pr-title a {
-  color: #1f2937;
+  color: var(--text-color);
   text-decoration: none;
 }
 
@@ -1453,7 +1421,7 @@ onUnmounted(() => {
 }
 
 .user-pr-item .pr-meta {
-  color: #6b7280;
+  color: var(--text-secondary);
   font-size: 0.875rem;
 }
 
