@@ -21,7 +21,8 @@
           </div>
 
           <!-- View Toggle -->
-          <div v-if="username && (repos.length > 0 || userAuthoredPRs.length > 0)" class="view-toggle">
+          <div v-if="username && (repos.length > 0 || userAuthoredPRs.length > 0 || userReviewPRs.length > 0)"
+            class="view-toggle">
             <button class="toggle-btn" :class="{ active: currentView === 'repos' }" @click="currentView = 'repos'">
               <span class="icon">📁</span>
               Repositories
@@ -29,8 +30,13 @@
             </button>
             <button class="toggle-btn" :class="{ active: currentView === 'prs' }" @click="currentView = 'prs'">
               <span class="icon">🔄</span>
-              All My PRs
+              My PRs
               <span v-if="userAuthoredPRs.length" class="count-badge">{{ userAuthoredPRs.length }}</span>
+            </button>
+            <button class="toggle-btn" :class="{ active: currentView === 'reviews' }" @click="currentView = 'reviews'">
+              <span class="icon">👀</span>
+              PRs to Review
+              <span v-if="userReviewPRs.length" class="count-badge">{{ userReviewPRs.length }}</span>
             </button>
           </div>
         </div>
@@ -127,7 +133,7 @@
       <div class="card-header">
         <h2 class="card-title">
           <span class="icon">🔄</span>
-          All Pull Requests by {{ username }}
+          My Pull Requests
           <span class="repo-count">{{ filteredUserPRs.length }} PRs</span>
         </h2>
       </div>
@@ -186,6 +192,75 @@
           <span class="empty-icon">🔄</span>
           <h3>No pull requests found</h3>
           <p>No PRs found matching the current filter.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- User Review PRs Section -->
+    <div v-if="username && userReviewPRs.length > 0 && currentView === 'reviews'" class="user-prs-card">
+      <div class="card-header">
+        <h2 class="card-title">
+          <span class="icon">👀</span>
+          Pull Requests to Review
+          <span class="repo-count">{{ filteredUserReviewPRs.length }} PRs</span>
+        </h2>
+      </div>
+
+      <div class="card-content">
+        <!-- Filter Review PRs -->
+        <div class="pr-filters">
+          <div class="pr-search-filter">
+            <input v-model="reviewSearchQuery" type="text"
+              placeholder="Search review PRs by repository, title, or number..." class="filter-input pr-search-input" />
+            <span class="search-icon">🔍</span>
+          </div>
+          <div class="state-filter">
+            <select v-model="userReviewPRState" class="filter-select">
+              <option value="all">All States</option>
+              <option value="open">Open</option>
+              <option value="closed">Closed</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Loading State -->
+        <div v-if="userReviewPRsLoading" class="loading-skeleton">
+          <div class="skeleton-item" v-for="i in 5" :key="i"></div>
+        </div>
+
+        <!-- Review PRs List -->
+        <div v-else class="user-prs-list">
+          <div v-for="pr in filteredUserReviewPRs" :key="pr.id" class="user-pr-item review-pr-item">
+            <div class="pr-icon">
+              <span class="status-icon" :class="pr.state">
+                {{ pr.state === 'open' ? '👀' : pr.pull_request?.merged_at ? '✅' : '❌' }}
+              </span>
+            </div>
+            <div class="pr-content">
+              <h4 class="pr-title">
+                <a :href="pr.html_url" target="_blank">
+                  {{ pr.title }}
+                </a>
+              </h4>
+              <div class="pr-meta">
+                <span class="repo-name">{{ pr.repository_url.split('/').slice(-2).join('/') }}</span>
+                • {{ pr.state }} • #{{ pr.number }} • {{ formatDate(pr.created_at) }}
+                • by {{ pr.user?.login }}
+              </div>
+            </div>
+            <div class="pr-status">
+              <span class="status-badge" :class="pr.pull_request?.merged_at ? 'merged' : pr.state">
+                {{ pr.pull_request?.merged_at ? 'merged' : pr.state }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Empty State for Review PRs -->
+        <div v-if="!userReviewPRsLoading && filteredUserReviewPRs.length === 0" class="empty-state">
+          <span class="empty-icon">👀</span>
+          <h3>No pull requests to review</h3>
+          <p>No PRs found that need your review matching the current filter.</p>
         </div>
       </div>
     </div>
@@ -322,6 +397,11 @@
       <div class="skeleton-item" v-for="i in 5" :key="i"></div>
     </div>
 
+    <!-- Loading State for Review PRs -->
+    <div v-if="userReviewPRsLoading && username && currentView === 'reviews'" class="loading-skeleton">
+      <div class="skeleton-item" v-for="i in 5" :key="i"></div>
+    </div>
+
     <!-- Error State -->
     <div v-if="error" class="error-alert">
       <div class="alert-content">
@@ -349,6 +429,14 @@
       <p>User {{ username }} has no authored pull requests or they're not accessible.</p>
     </div>
 
+    <!-- Empty State for No Review PRs -->
+    <div v-if="!userReviewPRsLoading && username && userReviewPRs.length === 0 && currentView === 'reviews' && !error"
+      class="empty-state">
+      <span class="empty-icon">👀</span>
+      <h3>No pull requests to review</h3>
+      <p>User {{ username }} has no pull requests to review or they're not accessible.</p>
+    </div>
+
     <!-- Welcome State -->
     <div v-if="!username" class="welcome-card">
       <div class="welcome-content">
@@ -367,7 +455,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { fetchRepos, fetchIssues, fetchAllPRsForRepo, fetchUserAuthoredPRs } from '../api/github'
+import { fetchRepos, fetchIssues, fetchAllPRsForRepo, fetchUserAuthoredPRs, fetchUserReviewPRs } from '../api/github'
 
 // Reactive state
 const username = ref('')
@@ -377,21 +465,24 @@ const loading = ref(false)
 const detailsLoading = ref(false)
 const error = ref<string | null>(null)
 const userPRsLoading = ref(false)
+const userReviewPRsLoading = ref(false)
 const showBackToTop = ref(false)
 
 const issues = ref<any[]>([])
 const prs = ref<any[]>([])
 const userAuthoredPRs = ref<any[]>([])
+const userReviewPRs = ref<any[]>([])
 
 const searchQuery = ref('')
 const prSearchQuery = ref('')
+const reviewSearchQuery = ref('')
 const sortBy = ref('updated_at')
 const sortOrder = ref('desc')
 
 const issueState = ref<'all' | 'open' | 'closed'>('all')
 const prState = ref<'all' | 'open' | 'closed'>('all')
 const tab = ref<'issues' | 'prs'>('issues')
-const currentView = ref<'repos' | 'prs'>('repos')
+const currentView = ref<'repos' | 'prs' | 'reviews'>('repos')
 
 // Computed properties
 const filteredAndSortedRepos = computed(() => {
@@ -434,6 +525,7 @@ const filteredPRs = computed(() =>
 )
 
 const userPRState = ref<'all' | 'open' | 'closed'>('all')
+const userReviewPRState = ref<'all' | 'open' | 'closed'>('all')
 
 const filteredUserPRs = computed(() => {
   let filtered = userAuthoredPRs.value
@@ -462,6 +554,33 @@ const filteredUserPRs = computed(() => {
   return filtered
 })
 
+const filteredUserReviewPRs = computed(() => {
+  let filtered = userReviewPRs.value
+
+  // Filter by state
+  if (userReviewPRState.value !== 'all') {
+    filtered = filtered.filter(pr => pr.state === userReviewPRState.value)
+  }
+
+  // Filter by search query
+  if (reviewSearchQuery.value) {
+    const query = reviewSearchQuery.value.toLowerCase()
+    filtered = filtered.filter(pr => {
+      // Extract repository name from repository_url
+      const repoName = pr.repository_url.split('/').slice(-2).join('/').toLowerCase()
+
+      // Search in repository name, PR title, and PR number
+      return (
+        repoName.includes(query) ||
+        pr.title.toLowerCase().includes(query) ||
+        pr.number.toString().includes(query)
+      )
+    })
+  }
+
+  return filtered
+})
+
 // Methods
 async function loadRepositories() {
   if (!username.value) return
@@ -472,11 +591,13 @@ async function loadRepositories() {
   // Clear search queries when loading new user
   searchQuery.value = ''
   prSearchQuery.value = ''
+  reviewSearchQuery.value = ''
 
   try {
     const [reposData] = await Promise.all([
       fetchRepos(username.value),
-      loadUserAuthoredPRs()
+      loadUserAuthoredPRs(),
+      loadUserReviewPRs()
     ])
     repos.value = reposData
   } catch (err: any) {
@@ -498,6 +619,20 @@ async function loadUserAuthoredPRs() {
     userAuthoredPRs.value = []
   } finally {
     userPRsLoading.value = false
+  }
+}
+
+async function loadUserReviewPRs() {
+  if (!username.value) return
+
+  userReviewPRsLoading.value = true
+  try {
+    userReviewPRs.value = await fetchUserReviewPRs(username.value)
+  } catch (err: any) {
+    console.error('Failed to fetch user review PRs:', err)
+    userReviewPRs.value = []
+  } finally {
+    userReviewPRsLoading.value = false
   }
 }
 
@@ -626,7 +761,7 @@ onUnmounted(() => {
 
 /* Search Form */
 .search-form {
-  max-width: 600px;
+  max-width: 768px;
   margin: 0 auto;
 }
 
@@ -1298,6 +1433,7 @@ onUnmounted(() => {
 
   .toggle-btn {
     justify-content: center;
+    min-width: unset;
   }
 
   .pr-filters {
@@ -1423,6 +1559,15 @@ onUnmounted(() => {
 .user-pr-item .pr-meta {
   color: var(--text-secondary);
   font-size: 0.875rem;
+}
+
+/* Review PR Items */
+.review-pr-item {
+  border-left: 3px solid var(--info);
+}
+
+.review-pr-item .pr-icon .status-icon.open {
+  color: var(--info);
 }
 
 .repo-name {

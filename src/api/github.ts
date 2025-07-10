@@ -91,6 +91,16 @@ export async function fetchUserAuthoredPRs(username: string) {
   });
 }
 
+// Fetch all PRs where the user is requested as a reviewer
+export async function fetchUserReviewPRs(username: string) {
+  // Fetch all PRs where user is requested as reviewer
+  return await fetchAllSearchResults(`/search/issues`, {
+    q: `type:pr review-requested:${username}`,
+    sort: "updated",
+    order: "desc",
+  });
+}
+
 // Fetch PRs for a specific repository that includes both repo PRs and user-authored PRs from upstream
 export async function fetchAllPRsForRepo(username: string, repo: string) {
   try {
