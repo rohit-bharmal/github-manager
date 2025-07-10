@@ -8,13 +8,14 @@ A modern, responsive web application for managing GitHub repositories, pull requ
 
 ## ✨ Features
 
-- 🔍 **Search GitHub Users** - Explore any user's repositories and contributions
-- 📁 **Repository Management** - View repos with detailed stats, languages, and metadata
-- 🔄 **Pull Request Tracking** - See all your PRs across repositories, including upstream contributions
-- 🐛 **Issue Management** - Browse and filter issues by status
+- 🔍 **Search GitHub Users** - Explore any user's public repositories and contributions
+- 📁 **Repository Management** - View public repos with detailed stats, languages, and metadata
+- 🔄 **Pull Request Tracking** - See all public PRs across repositories, including upstream contributions
+- 🐛 **Issue Management** - Browse and filter public issues by status
 - 🎨 **Beautiful UI** - Modern design with gradients, animations, and dark mode
 - 📱 **Responsive Design** - Works perfectly on desktop, tablet, and mobile
 - ⚡ **Fast Performance** - Built with Vite for lightning-fast development and builds
+- 🌐 **No Authentication Required** - Access public GitHub data without tokens
 
 ## 🛠️ Technology Stack
 
@@ -22,7 +23,7 @@ A modern, responsive web application for managing GitHub repositories, pull requ
 - **Language**: TypeScript
 - **Build Tool**: Vite
 - **Styling**: Custom CSS with CSS Variables
-- **API**: GitHub REST API v3
+- **API**: GitHub REST API v3 (Public endpoints)
 - **Deployment**: GitHub Pages via GitHub Actions
 
 ## 🚀 Quick Start
@@ -31,7 +32,6 @@ A modern, responsive web application for managing GitHub repositories, pull requ
 
 - Node.js 20+
 - npm or yarn
-- GitHub Personal Access Token
 
 ### Local Development
 
@@ -48,52 +48,27 @@ A modern, responsive web application for managing GitHub repositories, pull requ
    npm install
    ```
 
-3. **Set up environment variables**
-
-   ```bash
-   cp .env.example .env
-   ```
-
-   Edit `.env` and add your GitHub token:
-
-   ```env
-   VITE_GITHUB_TOKEN=your_github_personal_access_token_here
-   ```
-
-4. **Start development server**
+3. **Start development server**
 
    ```bash
    npm run dev
    ```
 
-5. **Open your browser**
+4. **Open your browser**
    Navigate to `http://localhost:5173`
 
-## 🔑 GitHub Token Setup
+## 🌐 GitHub API Usage
 
-### Creating a Personal Access Token
+This application uses GitHub's public API endpoints without authentication, which means:
 
-1. Go to [GitHub Settings > Developer settings > Personal access tokens](https://github.com/settings/tokens)
-2. Click "Generate new token (classic)"
-3. Give it a descriptive name like "GitHub Manager App"
-4. Select the following scopes:
-   - `public_repo` - Access public repositories
-   - `read:user` - Read user profile information
-   - `read:org` - Read organization membership (optional)
-5. Click "Generate token"
-6. **Copy the token immediately** (you won't see it again!)
+- ✅ **No token required** - Works immediately without setup
+- ✅ **Access to public repositories** - View all public repos, issues, and PRs
+- ⚠️ **Rate limited** - 60 requests per hour per IP address
+- ⚠️ **Public data only** - Cannot access private repositories or user-specific data
 
-### For Local Development
+### Rate Limiting
 
-Create a `.env` file in the project root:
-
-```env
-VITE_GITHUB_TOKEN=ghp_your_token_here
-```
-
-### For Production Deployment
-
-The app uses GitHub Actions for automatic deployment. The workflow will use repository secrets for the GitHub token.
+The GitHub API allows 60 requests per hour for unauthenticated requests. The app is designed to be efficient with API calls, but if you hit the rate limit, you'll need to wait before making more requests.
 
 ## 📦 Deployment
 
@@ -109,18 +84,13 @@ This project includes a GitHub Actions workflow that automatically deploys to Gi
    - Scroll to "Pages" section
    - Set source to "GitHub Actions"
 
-2. **Add Repository Secrets** (Optional - uses GITHUB_TOKEN by default)
-
-   - Go to repository Settings > Secrets and variables > Actions
-   - Add `VITE_GITHUB_TOKEN` with your personal access token value
-
-3. **Push to main branch**
+2. **Push to main branch**
 
    ```bash
    git push origin main
    ```
 
-4. **Monitor deployment**
+3. **Monitor deployment**
    - Check the "Actions" tab in your repository
    - Your app will be available at `https://your-username.github.io/github-manager/`
 
@@ -156,12 +126,6 @@ Dark mode is automatically supported with the same CSS variables. Toggle using t
 
 ## 🔧 Configuration
 
-### Environment Variables
-
-| Variable            | Description                  | Required |
-| ------------------- | ---------------------------- | -------- |
-| `VITE_GITHUB_TOKEN` | GitHub Personal Access Token | Yes      |
-
 ### Build Configuration
 
 The app is configured in `vite.config.ts`. Key settings:
@@ -181,7 +145,7 @@ The app is configured in `vite.config.ts`. Key settings:
 
 ### Pull Requests View
 
-- All PRs authored by the user
+- All public PRs authored by the user
 - Includes upstream repository contributions
 - Status filtering (open, closed, merged)
 - Repository context for each PR
@@ -210,7 +174,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [ ] Advanced filtering and search
 - [ ] Repository bookmarking
 - [ ] Notification system for PR updates
-- [ ] GitHub Apps integration
+- [ ] Enhanced caching to work within rate limits
 - [ ] Team collaboration features
 - [ ] Export functionality
 
