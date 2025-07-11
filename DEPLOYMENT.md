@@ -12,32 +12,7 @@ This guide will walk you through deploying your GitHub Manager application to Gi
 4. Under **Source**, select **GitHub Actions**
 5. Save the settings
 
-### Step 2: Set Up GitHub Token (Optional but Recommended)
-
-For the best experience and to avoid rate limits, set up a personal access token:
-
-#### Create Personal Access Token:
-
-1. Go to [GitHub Settings > Developer settings > Personal access tokens](https://github.com/settings/tokens)
-2. Click **"Generate new token (classic)"**
-3. Name it something like "GitHub Manager Deployment"
-4. Select these scopes:
-   - ✅ `public_repo` - Access public repositories
-   - ✅ `read:user` - Read user profile information
-   - ✅ `read:org` - Read organization membership (optional)
-5. Click **"Generate token"**
-6. **Copy the token immediately** (you won't see it again!)
-
-#### Add Token to Repository Secrets:
-
-1. Go to your repository **Settings**
-2. Click **Secrets and variables** > **Actions**
-3. Click **"New repository secret"**
-4. Name: `VITE_GITHUB_TOKEN`
-5. Value: Paste your personal access token
-6. Click **"Add secret"**
-
-### Step 3: Deploy
+### Step 2: Deploy
 
 1. Make sure your code is pushed to the `main` branch:
 
@@ -211,4 +186,4 @@ After deployment, test these features:
 
 ---
 
-Need help? [Open an issue](https://github.com/your-username/github-manager/issues) or check the [main README](README.md) for more information.
+Need help? [Open an issue](https://github.com/rohit-bharmal/github-manager/issues) or check the [main README](README.md) for more information.
