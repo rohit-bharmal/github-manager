@@ -180,9 +180,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🔗 Links
 
-- [Live Demo](https://your-username.github.io/github-manager/)
-- [GitHub Repository](https://github.com/your-username/github-manager)
-- [Report Issues](https://github.com/your-username/github-manager/issues)
+- [Live Demo](https://rohit-bharmal.github.io/github-manager/)
+- [GitHub Repository](https://github.com/rohit-bharmale/github-manager)
+- [Report Issues](https://github.com/rohit-bharmal/github-manager/issues)
 
 ## ⭐ Show Your Support
 
